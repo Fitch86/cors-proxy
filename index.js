@@ -28,11 +28,16 @@ app.get('/parse', async (req, res) => {
       return res.status(400).json({ error: 'URL parameter is required' });  
     }  
       
+    // 验证 URL 格式  
+    try {  
+      new URL(url);  
+    } catch (e) {  
+      return res.status(400).json({ error: 'Invalid URL format' });  
+    }  
+      
     const response = await axios.get(url, {  
       timeout: 10000,  
-      headers: {  
-        'User-Agent': 'IPTVnator/1.0'  
-      }  
+      headers: { 'User-Agent': 'IPTVnator/1.0' }  
     });  
       
     res.json({ payload: response.data });  
@@ -42,7 +47,7 @@ app.get('/parse', async (req, res) => {
       message: error.message   
     });  
   }  
-});  
+});
   
 // Xtream API 代理端点  
 app.get('/xtream', async (req, res) => {  
