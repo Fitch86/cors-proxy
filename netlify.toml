@@ -1,8 +1,7 @@
 [build]  
-  command = "npm install"  
-  functions = "functions"  
+  functions = "netlify/functions"  
   
 [[redirects]]  
-  from = "/api/*"  
-  to = "/.netlify/functions/proxy/:splat"  
+  from = "/parse"  
+  to = "/.netlify/functions/parse"  
   status = 200
