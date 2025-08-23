@@ -4,24 +4,23 @@ const axios = require('axios');
   
 const app = express();  
 const PORT = process.env.PORT || 3000;  
- // 配置 CORS 允许所有来源  
+  
+// 配置 CORS 允许所有来源  
 app.use(cors({  
   origin: '*',  
   methods: ['GET', 'POST', 'OPTIONS'],  
   allowedHeaders: ['Content-Type', 'Authorization']  
 }));  
   
+app.use(express.json());  
+  
+// M3U 播放列表解析端点  
 app.get('/parse', async (req, res) => {  
   // 手动设置 CORS 头部作为备用  
   res.header('Access-Control-Allow-Origin', '*');  
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  
   res.header('Access-Control-Allow-Headers', 'Content-Type');  
-  
-app.use(cors());  
-app.use(express.json());  
-  
-// M3U 播放列表解析端点  
-app.get('/parse', async (req, res) => {  
+    
   try {  
     const { url } = req.query;  
     if (!url) {  
@@ -47,7 +46,7 @@ app.get('/parse', async (req, res) => {
       message: error.message   
     });  
   }  
-});
+});  
   
 // Xtream API 代理端点  
 app.get('/xtream', async (req, res) => {  
