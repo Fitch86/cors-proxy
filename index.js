@@ -7,10 +7,10 @@ const PORT = process.env.PORT || 3000;
   
 // 配置 CORS 允许所有来源  
 app.use(cors({  
-  origin: '*',  
+  origin: ['https://iptvnt.netlify.app', '*'], // 明确允许你的域名  
   methods: ['GET', 'POST', 'OPTIONS'],  
   allowedHeaders: ['Content-Type', 'Authorization']  
-}));  
+}));
   
 app.use(express.json());  
   
