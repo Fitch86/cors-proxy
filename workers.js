@@ -25,7 +25,9 @@ async function handleRequest(request) {
     return handleXtream(url, corsHeaders)  
   } else if (url.pathname === '/stalker') {  
     return handleStalker(url, corsHeaders)  
-  }  
+  } else if (url.pathname === '/stream') {  
+    return handleStream(request, corsHeaders)  
+  }
     
   return new Response('Not Found', { status: 404, headers: corsHeaders })  
 }  
@@ -167,6 +169,93 @@ async function handleStalker(url, corsHeaders) {
         status: 500,  
         message: error.message   
       }),   
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }  
+    )  
+  }  
+}
+
+// 视频流代理端点  
+async function handleStream(request, corsHeaders) {  
+  try {  
+    const url = new URL(request.url)  
+    const targetUrl = url.searchParams.get('url')  
+      
+    if (!targetUrl) {  
+      return new Response(  
+        JSON.stringify({ error: 'URL parameter is required' }),  
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }  
+      )  
+    }  
+  
+    // 构建请求头，转发重要的HTTP头  
+    const requestHeaders = {}  
+      
+    // 转发User-Agent  
+    const userAgent = request.headers.get('User-Agent') || 'IPTVnator/1.0'  
+    requestHeaders['User-Agent'] = userAgent  
+      
+    // 转发Referer  
+    const referer = request.headers.get('Referer')  
+    if (referer) {  
+      requestHeaders['Referer'] = referer  
+    }  
+      
+    // 转发Origin  
+    const origin = request.headers.get('Origin')  
+    if (origin) {  
+      requestHeaders['Origin'] = origin  
+    }  
+      
+    // 转发Range请求（用于视频流的分段加载）  
+    const range = request.headers.get('Range')  
+    if (range) {  
+      requestHeaders['Range'] = range  
+    }  
+  
+    const response = await fetch(targetUrl, {  
+      method: request.method,  
+      headers: requestHeaders  
+    })  
+  
+    if (!response.ok) {  
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)  
+    }  
+  
+    // 构建响应头  
+    const responseHeaders = { ...corsHeaders }  
+      
+    // 转发重要的响应头  
+    const contentType = response.headers.get('Content-Type')  
+    if (contentType) {  
+      responseHeaders['Content-Type'] = contentType  
+    }  
+      
+    const contentLength = response.headers.get('Content-Length')  
+    if (contentLength) {  
+      responseHeaders['Content-Length'] = contentLength  
+    }  
+      
+    const acceptRanges = response.headers.get('Accept-Ranges')  
+    if (acceptRanges) {  
+      responseHeaders['Accept-Ranges'] = acceptRanges  
+    }  
+      
+    const contentRange = response.headers.get('Content-Range')  
+    if (contentRange) {  
+      responseHeaders['Content-Range'] = contentRange  
+    }  
+  
+    return new Response(response.body, {  
+      status: response.status,  
+      headers: responseHeaders  
+    })  
+      
+  } catch (error) {  
+    return new Response(  
+      JSON.stringify({  
+        status: 500,  
+        message: error.message  
+      }),  
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }  
     )  
   }  
